@@ -27,3 +27,4 @@ dist-ssr
 api/pages/
 
 api/categories/
+.env
