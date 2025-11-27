@@ -8,7 +8,7 @@ import SearchSuggestions from "@/components/ui/search-suggestions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { X, Filter, Search, Zap, ShoppingBag, Package } from "lucide-react";
+import { X, Filter, Search, Zap, ShoppingBag, Package, Grid3x3, List, TrendingUp, DollarSign, Star } from "lucide-react";
 import { Button } from "@/components/ui/enhanced-button";
 import shopHeroBg from "@/assets/shop-hero-bg.jpg";
 import electricalPattern from "@/assets/electrical-pattern.jpg";
@@ -38,6 +38,10 @@ const Shop = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [sortBy, setSortBy] = useState('featured');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [itemsPerPage] = useState(12);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Update filters when URL params change
   useEffect(() => {
@@ -54,22 +58,51 @@ const Shop = () => {
   // Transform categories for filtering
   const categoryOptions = categories.map(cat => ({ id: cat.id, name: cat.name }));
   
-  // Filter products based on current filters
+  // Filter and sort products
   const filteredProducts = products.filter(product => {
-    const matchesSearch = !filters.search || 
+    const matchesSearch = !filters.search ||
       product.name.toLowerCase().includes(filters.search.toLowerCase()) ||
       product.brand.toLowerCase().includes(filters.search.toLowerCase());
-    
+
     const matchesCategory = filters.category === 'all' || product.category_id === filters.category;
     const matchesBrand = !filters.brand || product.brand.toLowerCase().includes(filters.brand.toLowerCase());
-    const matchesAvailability = filters.availability === 'all' || 
+    const matchesAvailability = filters.availability === 'all' ||
       (filters.availability === 'In Stock' ? product.in_stock : !product.in_stock);
-    
+
     const matchesPrice = (!filters.minPrice || product.price >= parseFloat(filters.minPrice)) &&
                         (!filters.maxPrice || product.price <= parseFloat(filters.maxPrice));
 
     return matchesSearch && matchesCategory && matchesBrand && matchesAvailability && matchesPrice;
   });
+
+  // Sort products
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortBy) {
+      case 'price-low':
+        return a.price - b.price;
+      case 'price-high':
+        return b.price - a.price;
+      case 'name-asc':
+        return a.name.localeCompare(b.name);
+      case 'name-desc':
+        return b.name.localeCompare(a.name);
+      case 'newest':
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      case 'featured':
+      default:
+        return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+    }
+  });
+
+  // Paginate products
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedProducts = sortedProducts.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, sortBy]);
 
   const searchQuery = filters.search.trim().toLowerCase();
   const suggestions = searchQuery
@@ -106,22 +139,35 @@ const Shop = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div 
-        className="relative h-80 bg-cover bg-center bg-no-repeat"
+      <div
+        className="relative h-96 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${shopHeroBg})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-secondary/80" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 via-blue-700/85 to-slate-900/90" />
         <div className="relative container mx-auto px-4 h-full flex items-center">
           <div className="text-center w-full">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 animate-fade-in">
-              Electrical Excellence
+            <div className="flex items-center justify-center mb-4">
+              <Zap className="h-12 w-12 text-yellow-400 animate-pulse" />
+            </div>
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 animate-fade-in">
+              Premium Electrical Store
             </h1>
-            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-              Discover premium electrical products for your home and business
+            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto font-light">
+              Power Your World with Quality Products
             </p>
-            <div className="flex items-center justify-center">
-              <Zap className="h-8 w-8 text-accent mr-3" />
-              <span className="text-white text-lg font-medium">Quality • Innovation • Trust</span>
+            <div className="flex flex-wrap items-center justify-center gap-6 text-white/90">
+              <div className="flex items-center">
+                <Star className="h-5 w-5 text-yellow-400 mr-2" />
+                <span className="text-lg">Top Quality</span>
+              </div>
+              <div className="flex items-center">
+                <ShoppingBag className="h-5 w-5 text-yellow-400 mr-2" />
+                <span className="text-lg">Fast Delivery</span>
+              </div>
+              <div className="flex items-center">
+                <DollarSign className="h-5 w-5 text-yellow-400 mr-2" />
+                <span className="text-lg">Best Prices</span>
+              </div>
             </div>
           </div>
         </div>
@@ -314,51 +360,115 @@ const Shop = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
               <div>
                 <h2 className="text-2xl font-bold text-foreground">
-                  {filteredProducts.length} Products Found
+                  {sortedProducts.length} Products Found
                 </h2>
                 <p className="text-muted-foreground">
                   {activeFiltersCount > 0 ? 'Filtered results' : 'Showing all products'}
                 </p>
               </div>
-              
-              {/* Active Filters */}
-              {activeFiltersCount > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {filters.search && (
-                    <Badge variant="secondary" className="px-3 py-1">
-                      Search: {filters.search}
-                      <X 
-                        className="h-3 w-3 ml-2 cursor-pointer" 
-                        onClick={() => updateFilter('search', '')}
-                      />
-                    </Badge>
-                  )}
-                  {filters.category && filters.category !== 'all' && (
-                    <Badge variant="secondary" className="px-3 py-1">
-                      Category: {filters.category}
-                      <X 
-                        className="h-3 w-3 ml-2 cursor-pointer" 
-                        onClick={() => updateFilter('category', 'all')}
-                      />
-                    </Badge>
-                  )}
-                  {filters.brand && (
-                    <Badge variant="secondary" className="px-3 py-1">
-                      Brand: {filters.brand}
-                      <X 
-                        className="h-3 w-3 ml-2 cursor-pointer" 
-                        onClick={() => updateFilter('brand', '')}
-                      />
-                    </Badge>
-                  )}
+
+              {/* Sort and View Controls */}
+              <div className="flex items-center gap-3">
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[180px] h-10">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="featured">Featured</SelectItem>
+                    <SelectItem value="price-low">Price: Low to High</SelectItem>
+                    <SelectItem value="price-high">Price: High to Low</SelectItem>
+                    <SelectItem value="name-asc">Name: A to Z</SelectItem>
+                    <SelectItem value="name-desc">Name: Z to A</SelectItem>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <div className="flex border rounded-md">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="icon"
+                    onClick={() => setViewMode('grid')}
+                    className="rounded-r-none"
+                  >
+                    <Grid3x3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="icon"
+                    onClick={() => setViewMode('list')}
+                    className="rounded-l-none"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
                 </div>
-              )}
+              </div>
             </div>
+
+            {/* Quick Filters */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              <Badge
+                variant={filters.availability === 'In Stock' ? 'default' : 'outline'}
+                className="cursor-pointer px-4 py-2 text-sm"
+                onClick={() => updateFilter('availability', filters.availability === 'In Stock' ? 'all' : 'In Stock')}
+              >
+                In Stock Only
+              </Badge>
+              <Badge
+                variant="outline"
+                className="cursor-pointer px-4 py-2 text-sm"
+                onClick={() => {
+                  updateFilter('minPrice', '');
+                  updateFilter('maxPrice', '1000');
+                }}
+              >
+                Under ₹1000
+              </Badge>
+              <Badge
+                variant="outline"
+                className="cursor-pointer px-4 py-2 text-sm"
+                onClick={() => updateFilter('category', categories[0]?.id || 'all')}
+              >
+                {categories[0]?.name || 'Category'}
+              </Badge>
+            </div>
+
+            {/* Active Filters */}
+            {activeFiltersCount > 0 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {filters.search && (
+                  <Badge variant="secondary" className="px-3 py-1">
+                    Search: {filters.search}
+                    <X
+                      className="h-3 w-3 ml-2 cursor-pointer"
+                      onClick={() => updateFilter('search', '')}
+                    />
+                  </Badge>
+                )}
+                {filters.category && filters.category !== 'all' && (
+                  <Badge variant="secondary" className="px-3 py-1">
+                    Category: {filters.category}
+                    <X
+                      className="h-3 w-3 ml-2 cursor-pointer"
+                      onClick={() => updateFilter('category', 'all')}
+                    />
+                  </Badge>
+                )}
+                {filters.brand && (
+                  <Badge variant="secondary" className="px-3 py-1">
+                    Brand: {filters.brand}
+                    <X
+                      className="h-3 w-3 ml-2 cursor-pointer"
+                      onClick={() => updateFilter('brand', '')}
+                    />
+                  </Badge>
+                )}
+              </div>
+            )}
 
             {/* Products Grid */}
             {loading ? (
-              <div 
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
+              <div
+                className={`grid ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-4 md:gap-6`}
                 aria-busy="true"
                 aria-label="Loading products"
               >
@@ -366,18 +476,54 @@ const Shop = () => {
                   <div key={i} className="h-96 bg-card rounded-lg animate-pulse" role="presentation"></div>
                 ))}
               </div>
-            ) : filteredProducts.length > 0 ? (
-              <div 
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 px-2 sm:px-0"
-                role="region"
-                aria-label="Products grid"
-              >
-                {filteredProducts.map((product) => (
-                  <div key={product.id} className="animate-fade-in hover-scale">
-                    <ProductCard product={product} />
+            ) : paginatedProducts.length > 0 ? (
+              <>
+                <div
+                  className={`grid ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-4 md:gap-6 px-2 sm:px-0`}
+                  role="region"
+                  aria-label="Products grid"
+                >
+                  {paginatedProducts.map((product) => (
+                    <div key={product.id} className="animate-fade-in hover-scale">
+                      <ProductCard product={product} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-12">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+
+                    <div className="flex gap-2">
+                      {[...Array(totalPages)].map((_, i) => (
+                        <Button
+                          key={i}
+                          variant={currentPage === i + 1 ? 'default' : 'outline'}
+                          onClick={() => setCurrentPage(i + 1)}
+                          className="w-10"
+                        >
+                          {i + 1}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </Button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             ) : (
               <div 
                 className="text-center py-16"
