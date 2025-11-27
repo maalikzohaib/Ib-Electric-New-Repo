@@ -33,6 +33,9 @@ const Shop = () => {
     availability: searchParams.get('availability') || 'all',
     minPrice: searchParams.get('minPrice') || '',
     maxPrice: searchParams.get('maxPrice') || '',
+    minRating: searchParams.get('minRating') || '',
+    featured: searchParams.get('featured') || 'false',
+    onSale: searchParams.get('onSale') || 'false',
   });
 
   const [showFilters, setShowFilters] = useState(false);
@@ -52,6 +55,9 @@ const Shop = () => {
       availability: searchParams.get('availability') || 'all',
       minPrice: searchParams.get('minPrice') || '',
       maxPrice: searchParams.get('maxPrice') || '',
+      minRating: searchParams.get('minRating') || '',
+      featured: searchParams.get('featured') || 'false',
+      onSale: searchParams.get('onSale') || 'false',
     });
   }, [searchParams]);
 
@@ -62,7 +68,7 @@ const Shop = () => {
   const filteredProducts = products.filter(product => {
     const matchesSearch = !filters.search ||
       product.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-      product.brand.toLowerCase().includes(filters.search.toLowerCase());
+      product.brand.toLowerCase().includes(filters.brand.toLowerCase());
 
     const matchesCategory = filters.category === 'all' || product.category_id === filters.category;
     const matchesBrand = !filters.brand || product.brand.toLowerCase().includes(filters.brand.toLowerCase());
@@ -72,7 +78,11 @@ const Shop = () => {
     const matchesPrice = (!filters.minPrice || product.price >= parseFloat(filters.minPrice)) &&
                         (!filters.maxPrice || product.price <= parseFloat(filters.maxPrice));
 
-    return matchesSearch && matchesCategory && matchesBrand && matchesAvailability && matchesPrice;
+    const matchesRating = !filters.minRating || (product.rating || 0) >= parseFloat(filters.minRating);
+    const matchesFeatured = filters.featured === 'false' || product.featured === true;
+    const matchesOnSale = filters.onSale === 'false' || (product.discount_price && product.discount_price < product.price);
+
+    return matchesSearch && matchesCategory && matchesBrand && matchesAvailability && matchesPrice && matchesRating && matchesFeatured && matchesOnSale;
   });
 
   // Sort products
@@ -131,9 +141,12 @@ const Shop = () => {
     setSearchParams({});
   };
 
-  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => 
-    value && value !== 'all'
-  ).length;
+  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
+    if (key === 'featured' || key === 'onSale') {
+      return value === 'true';
+    }
+    return value && value !== 'all' && value !== 'false';
+  }).length;
   const uniqueBrands = [...new Set(products.map(p => p.brand))];
 
   return (
@@ -350,11 +363,67 @@ const Shop = () => {
                   </Select>
                 </div>
 
-                {/* Decorative Element */}
-                <div 
-                  className="h-32 rounded-lg bg-cover bg-center opacity-20"
-                  style={{ backgroundImage: `url(${electricalPattern})` }}
-                />
+                {/* Rating Filter */}
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-foreground flex items-center">
+                    <Star className="h-4 w-4 mr-2 text-primary" />
+                    Minimum Rating
+                  </label>
+                  <div className="space-y-2">
+                    {[4, 3, 2, 1].map((rating) => (
+                      <div
+                        key={rating}
+                        className="flex items-center gap-2 cursor-pointer hover:bg-accent p-2 rounded-lg transition-colors"
+                        onClick={() => updateFilter('minRating', rating.toString())}
+                      >
+                        <input
+                          type="radio"
+                          name="rating"
+                          checked={filters.minRating === rating.toString()}
+                          onChange={() => {}}
+                          className="cursor-pointer"
+                        />
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: rating }).map((_, i) => (
+                            <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          ))}
+                          {Array.from({ length: 5 - rating }).map((_, i) => (
+                            <Star key={i} className="h-4 w-4 text-gray-300" />
+                          ))}
+                          <span className="text-sm text-muted-foreground ml-1">& up</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Featured Products Toggle */}
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-foreground flex items-center">
+                    <Zap className="h-4 w-4 mr-2 text-primary" />
+                    Special Filters
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-3 bg-accent/50 rounded-lg">
+                      <span className="text-sm font-medium">Featured Only</span>
+                      <input
+                        type="checkbox"
+                        checked={filters.featured === 'true'}
+                        onChange={(e) => updateFilter('featured', e.target.checked ? 'true' : 'false')}
+                        className="h-4 w-4 cursor-pointer"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-accent/50 rounded-lg">
+                      <span className="text-sm font-medium">On Sale</span>
+                      <input
+                        type="checkbox"
+                        checked={filters.onSale === 'true'}
+                        onChange={(e) => updateFilter('onSale', e.target.checked ? 'true' : 'false')}
+                        className="h-4 w-4 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
