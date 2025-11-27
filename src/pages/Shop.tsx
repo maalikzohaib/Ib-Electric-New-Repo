@@ -139,34 +139,39 @@ const Shop = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div
-        className="relative h-96 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${shopHeroBg})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 via-blue-700/85 to-slate-900/90" />
+      <div className="relative h-96 overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.15),transparent_50%),radial-gradient(circle_at_70%_50%,rgba(147,51,234,0.1),transparent_50%)]" />
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.03\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+          opacity: 0.4
+        }} />
+
         <div className="relative container mx-auto px-4 h-full flex items-center">
           <div className="text-center w-full">
-            <div className="flex items-center justify-center mb-4">
-              <Zap className="h-12 w-12 text-yellow-400 animate-pulse" />
+            <div className="flex items-center justify-center mb-6">
+              <div className="relative">
+                <div className="absolute inset-0 bg-yellow-400 blur-xl opacity-50 animate-pulse" />
+                <Zap className="relative h-16 w-16 text-yellow-400" />
+              </div>
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 animate-fade-in">
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 animate-fade-in tracking-tight">
               Premium Electrical Store
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto font-light">
+            <p className="text-xl md:text-2xl text-slate-300 mb-10 max-w-3xl mx-auto font-light">
               Power Your World with Quality Products
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-6 text-white/90">
-              <div className="flex items-center">
-                <Star className="h-5 w-5 text-yellow-400 mr-2" />
-                <span className="text-lg">Top Quality</span>
+            <div className="flex flex-wrap items-center justify-center gap-8 text-slate-200">
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm px-6 py-3 rounded-full border border-white/10">
+                <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                <span className="text-lg font-medium">Top Quality</span>
               </div>
-              <div className="flex items-center">
-                <ShoppingBag className="h-5 w-5 text-yellow-400 mr-2" />
-                <span className="text-lg">Fast Delivery</span>
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm px-6 py-3 rounded-full border border-white/10">
+                <ShoppingBag className="h-5 w-5 text-yellow-400" />
+                <span className="text-lg font-medium">Fast Delivery</span>
               </div>
-              <div className="flex items-center">
-                <DollarSign className="h-5 w-5 text-yellow-400 mr-2" />
-                <span className="text-lg">Best Prices</span>
+              <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm px-6 py-3 rounded-full border border-white/10">
+                <DollarSign className="h-5 w-5 text-yellow-400" />
+                <span className="text-lg font-medium">Best Prices</span>
               </div>
             </div>
           </div>
