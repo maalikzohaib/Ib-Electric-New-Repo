@@ -313,14 +313,14 @@ const Shop = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <Input
                       type="number"
-                      placeholder="Min ₹"
+                      placeholder="Min Rs."
                       value={filters.minPrice}
                       onChange={(e) => updateFilter('minPrice', e.target.value)}
                       className="h-12"
                     />
                     <Input
                       type="number"
-                      placeholder="Max ₹"
+                      placeholder="Max Rs."
                       value={filters.maxPrice}
                       onChange={(e) => updateFilter('maxPrice', e.target.value)}
                       className="h-12"
@@ -412,23 +412,6 @@ const Shop = () => {
                 onClick={() => updateFilter('availability', filters.availability === 'In Stock' ? 'all' : 'In Stock')}
               >
                 In Stock Only
-              </Badge>
-              <Badge
-                variant="outline"
-                className="cursor-pointer px-4 py-2 text-sm"
-                onClick={() => {
-                  updateFilter('minPrice', '');
-                  updateFilter('maxPrice', '1000');
-                }}
-              >
-                Under ₹1000
-              </Badge>
-              <Badge
-                variant="outline"
-                className="cursor-pointer px-4 py-2 text-sm"
-                onClick={() => updateFilter('category', categories[0]?.id || 'all')}
-              >
-                {categories[0]?.name || 'Category'}
               </Badge>
             </div>
 
